@@ -1,8 +1,8 @@
-// 1. Importando as funções necessárias dos SDKs do Firebase via CDN
+// 1. IMPORTANTE: Adicionado o 'addDoc' no import do firestore
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs , addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 2. SUA CONFIGURAÇÃO DO FIREBASE (Substitua pelos seus dados reais aqui)
+// 2. Sua configuração do Firebase (Mantenha as suas chaves reais aqui)
  const firebaseConfig = {
     apiKey: "AIzaSyApWf-UEQSvbKY44556cCfvPkSDDXcVdZI",
     authDomain: "meu-site-estatico-803c0.firebaseapp.com",
@@ -12,51 +12,40 @@ import { getFirestore, collection, getDocs , addDoc } from "https://www.gstatic.
     appId: "1:458136971290:web:0893b52b8ec26bbe5c49a3"
   };
 
-// 3. Inicializando o Firebase e o Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 4. Mapeando o elemento HTML onde os produtos vão aparecer
+// Mapeando os elementos do HTML
 const containerProdutos = document.getElementById("lista-produtos");
 const formCadastro = document.getElementById("form-cadastro");
 
-// 5. Função assíncrona para buscar os dados no banco
-async function buscarProdutosdoFirebase() {
+// 3. Função para buscar os dados no banco (Continua igual)
+async function buscarProdutos() {
     try {
-        // Busca todos os documentos da coleção "produtos"
         const querySnapshot = await getDocs(collection(db, "produtos"));
-        
-        // Limpa o texto de "Carregando..."
         containerProdutos.innerHTML = "";
 
-        // Se a coleção estiver vazia
         if (querySnapshot.empty) {
-            containerProdutos.innerHTML = "<p class='carregando'>Nenhum produto encontrado no banco de dados.</p>";
+            containerProdutos.innerHTML = "<p class='carregando'>Nenhum produto encontrado.</p>";
             return;
         }
 
-        // Passa por cada documento retornado do banco
         querySnapshot.forEach((doc) => {
-            const produto = doc.data(); // Extrai os dados (nome, preco, etc.)
-
-            // Cria a estrutura HTML do card do produto
+            const produto = doc.data();
             const cardHTML = `
                 <div class="card-produto">
                     <h3>${produto.nome}</h3>
                     <p class="preco">R$ ${Number(produto.preco).toFixed(2)}</p>
                 </div>
             `;
-
-            // Injeta o card dentro do container no HTML
             containerProdutos.innerHTML += cardHTML;
         });
-
     } catch (erro) {
-        console.error("Erro ao buscar dados do Firebase: ", erro);
-        containerProdutos.innerHTML = "<p class='carregando' style='color: red;'>Erro ao carregar produtos. Verifique o console.</p>";
+        console.error("Erro ao buscar: ", erro);
     }
 }
 
+// 4. NOVA FUNÇÃO: Escutar o envio do formulário e salvar no Firebase
 formCadastro.addEventListener("submit", async (event) => {
     event.preventDefault(); // Impede a página de recarregar ao enviar o form
 
@@ -82,5 +71,5 @@ formCadastro.addEventListener("submit", async (event) => {
     }
 });
 
-// 6. Executa a função assim que a página termina de carregar
-buscarProdutosdoFirebase();
+// Executa a busca ao abrir a página
+buscarProdutos();
