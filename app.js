@@ -1,6 +1,6 @@
 // 1. Importando as funções necessárias dos SDKs do Firebase via CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs , addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // 2. SUA CONFIGURAÇÃO DO FIREBASE (Substitua pelos seus dados reais aqui)
  const firebaseConfig = {
@@ -18,6 +18,7 @@ const db = getFirestore(app);
 
 // 4. Mapeando o elemento HTML onde os produtos vão aparecer
 const containerProdutos = document.getElementById("lista-produtos");
+const formCadastro = document.getElementById("form-cadastro");
 
 // 5. Função assíncrona para buscar os dados no banco
 async function buscarProdutosdoFirebase() {
@@ -55,6 +56,31 @@ async function buscarProdutosdoFirebase() {
         containerProdutos.innerHTML = "<p class='carregando' style='color: red;'>Erro ao carregar produtos. Verifique o console.</p>";
     }
 }
+
+formCadastro.addEventListener("submit", async (event) => {
+    event.preventDefault(); // Impede a página de recarregar ao enviar o form
+
+    // Pega os valores digitados nos inputs
+    const nomeDigitado = document.getElementById("nome").value;
+    const precoDigitado = document.getElementById("preco").value;
+
+    try {
+        // Envia para a coleção "produtos" no Firebase
+        await addDoc(collection(db, "produtos"), {
+            nome: nomeDigitado,
+            preco: Number(precoDigitado) // Garante que o preço vai como número e não texto
+        });
+
+        alert("Produto cadastrado com sucesso!");
+        
+        formCadastro.reset(); // Limpa os campos do formulário
+        buscarProdutos();     // Atualiza a lista na tela para mostrar o novo produto imediatamente
+
+    } catch (erro) {
+        console.error("Erro ao salvar o produto: ", erro);
+        alert("Erro ao salvar produto. Verifique as regras de segurança do seu Firebase.");
+    }
+});
 
 // 6. Executa a função assim que a página termina de carregar
 buscarProdutosdoFirebase();
